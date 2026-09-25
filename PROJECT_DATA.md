@@ -41,7 +41,7 @@ Corporate actions are embedded in the registered CSVs. Their effective dates and
 
 | ID | Path | Purpose | Version/date | SHA-256 | Reconciliation state |
 |---|---|---|---|---|---|
-| SPEC-IND-001 | `research/abnb/data/raw/specifications/ABNB_predictive_indicators1.pdf` | Initial eight feature definitions and data rules | Revision 2; 2026-09-24 | `c2f028079e15d4afa4b0ba35a2595b6229d1c35533b4c9a0b0fcdecaa0fef6dd` | Reviewed; charter controls forecast origin, issuance, target, and unavailable-by-cutoff status |
+| SPEC-IND-001 | `research/abnb/data/raw/specifications/ABNB_predictive_indicators1.pdf` | Initial eight feature definitions and data rules | Revision 2; 2026-09-24 | `c2f028079e15d4afa4b0ba35a2595b6229d1c35533b4c9a0b0fcdecaa0fef6dd` | Reviewed and reconciled in D006; implemented in `pipeline/features.py`; charter controls forecast origin, issuance, target, and unavailable-by-cutoff status |
 
 Any PDF interpretation that changes or clarifies a formula, seed, null behavior, timing rule, or parameter must be recorded in `PROJECT_DECISIONS.md`. A conflict with `PROJECT_INNATE.md` requires user resolution; a PDF does not silently override the charter.
 

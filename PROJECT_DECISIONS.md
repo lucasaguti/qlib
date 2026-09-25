@@ -73,3 +73,14 @@
 - Consequences: The default development panel covers 2020-12-10 through 2026-09-23 and retains ABNB and EXPE on 2026-09-22 as missing. Cutoff classification uses XNYS regular-session close only as a development proxy; it does not resolve missing point-in-time adjustment-state evidence. Persisted snapshots require separate registry entries.
 - Evidence: `research/abnb/pipeline/panel.py`; `research/abnb/tests/test_panel.py` (7 tests passed on 2026-09-25).
 - Supersedes: none.
+
+### D006 — Expose status-bearing daily feature primitives
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: feature
+- Decision: Implement each locked feature as an independent function over oldest-to-newest daily adjusted closes, returning `FeatureResult(value, status)` for the final supplied session. Use the PDF's simple-average seeds and recursive updates for RSI, EMA, and MACD; reset recursive state after any non-`VALID` observation. Fixed-window functions inspect exactly their trailing required sessions. Exact-index equality is enforced for pandas EXPE/BKNG inputs, and non-pandas peer sequences are required to be pre-aligned. If multiple source failures occur in one required window, apply the canonical source-state precedence `MISSING_SOURCE`, then `INVALID_PRICE`, then `UNAVAILABLE_BY_CUTOFF`.
+- Rationale: A small scalar result contract makes every formula and boundary independently testable while preserving the source status needed to distinguish absence, invalidity, cutoff masking, and warm-up. It also keeps daily indicator logic separate from later monthly sampling and model fitting.
+- Consequences: Callers must provide complete common-calendar daily rows, preferably with canonical panel statuses. Daily panel orchestration and monthly sampling remain separate follow-up components. Passing only price sequences cannot reconstruct an unavailable-by-cutoff state, so explicit statuses are required to retain it.
+- Evidence: `research/abnb/pipeline/features.py`; `research/abnb/tests/test_features.py` (24 focused tests and 31 total ABNB tests passed on 2026-09-25); `research/abnb/data/raw/specifications/ABNB_predictive_indicators1.pdf` revision 2.
+- Supersedes: none.
