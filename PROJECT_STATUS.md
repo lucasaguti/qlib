@@ -14,20 +14,6 @@
 - No project dataset, indicator-outline PDF, project-specific implementation, frozen split, trained model, or result is currently registered.
 - The user will manually add datasets and predictive-indicator PDF outlines.
 
-## Workstream checklist
-
-- [ ] Register incoming datasets and PDFs in `PROJECT_DATA.md` before using them.
-- [ ] Verify source rights, schemas, checksums, timestamps, adjustment semantics, and XNYS calendar coverage.
-- [ ] Define the project package/config/artifact layout without coupling research code to Qlib internals unnecessarily.
-- [ ] Implement and test the point-in-time eligibility and three-calendar-month target contracts.
-- [ ] Implement and test the eight locked features and per-value status fields.
-- [ ] Freeze the development/final-test protocol and record the decision.
-- [ ] Implement the zero and matured expanding-mean benchmarks.
-- [ ] Implement fold-local Ridge preprocessing and chronological tuning.
-- [ ] Run walk-forward evaluation and dependence-aware inference.
-- [ ] Run predefined robustness analyses, then the authorized final evaluation.
-- [ ] Publish a reproducible report, including negative or inconclusive findings.
-
 ## Immediate next actions
 
 1. Wait for the manually supplied datasets and indicator PDFs.

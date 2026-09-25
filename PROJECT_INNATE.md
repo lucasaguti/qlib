@@ -99,5 +99,3 @@ No single metric, in-sample fit, profitable hypothetical signal, or isolated int
 ## Controlled extensions
 
 Buy/sell/hold analysis requires separate authorization and thresholds fixed before evaluation. It must define executable prices, costs, turnover, exposure/risk, uncertainty, and passive comparators. It remains downstream of forecast evaluation and must never connect to live brokerage execution.
-
-The planned sequence is: acquire authorized point-in-time data; validate it; build eligible monthly features and the target; freeze development/final-test protocol; implement both benchmarks and Ridge; run walk-forward evaluation; perform predefined sensitivity analyses; run the isolated final evaluation; report with provenance; then consider extensions separately.
