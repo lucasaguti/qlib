@@ -62,3 +62,14 @@
 - Consequences: Pipeline and contract tests may use the files if clearly labeled development work; confirmatory evaluation and claims remain blocked.
 - Evidence: `research/abnb/validation/DATA_VALIDATION.md` and `data_validation.json`.
 - Supersedes: none.
+
+### D005 — Represent the canonical daily panel as a complete XNYS product
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: data
+- Decision: Build an in-memory long-form panel indexed by `(session_date, security)` over every XNYS session from the latest registered first observation through the latest registered last observation. Keep the parsed source adjusted close separately, expose a modeling adjusted close only for `VALID` rows, and classify rows as `VALID`, `MISSING_SOURCE`, `INVALID_PRICE`, or `UNAVAILABLE_BY_CUTOFF`. Missing and invalid source states take precedence over cutoff masking.
+- Rationale: A complete calendar product makes source gaps explicit and prevents an intersection, fill, or invalid value from silently changing indicator windows. Separating source and modeling values preserves audit evidence while failing closed downstream.
+- Consequences: The default development panel covers 2020-12-10 through 2026-09-23 and retains ABNB and EXPE on 2026-09-22 as missing. Cutoff classification uses XNYS regular-session close only as a development proxy; it does not resolve missing point-in-time adjustment-state evidence. Persisted snapshots require separate registry entries.
+- Evidence: `research/abnb/pipeline/panel.py`; `research/abnb/tests/test_panel.py` (7 tests passed on 2026-09-25).
+- Supersedes: none.

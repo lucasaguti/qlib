@@ -4,7 +4,7 @@
 
 **Last updated:** 2026-09-25  
 **Repository baseline:** Qlib checkout at `be725493`  
-**Current phase:** source-data intake and validation
+**Current phase:** development-only canonical panel and feature pipeline
 **Final test status:** not selected; no access has occurred
 
 ## Current state
@@ -14,15 +14,16 @@
 - ABNB, BKNG, EXPE, and SPY current/archived CSVs, both source manifests, and the initial indicator PDF are registered under `research/abnb/data/raw/` and excluded from Git.
 - Reproducible validation is implemented in `research/abnb/pipeline/validate_inputs.py`; results are in `research/abnb/validation/`.
 - Byte, archive, schema, date, and value integrity passed. ABNB and EXPE are missing the XNYS session 2026-09-22.
+- The in-memory canonical daily panel is implemented in `research/abnb/pipeline/panel.py`. It verifies registered hashes, uses the full 1,452-session XNYS study calendar, retains source lineage metadata, masks unusable modeling prices, and preserves the two 2026-09-22 source gaps as `MISSING_SOURCE`.
 - The supplied inputs are classified `DEVELOPMENT_ONLY`: point-in-time evidence is insufficient and usage rights are unknown.
-- No processed dataset, frozen split, trained model, or model result exists.
+- No persisted processed dataset, frozen split, trained model, or model result exists.
 
 ## Immediate next actions
 
-1. Investigate or replace the missing ABNB and EXPE observations for 2026-09-22 without filling them silently.
-2. Obtain supporting point-in-time availability/corporate-action evidence and document data usage rights.
-3. Decide whether to authorize a clearly labeled development-only feature pipeline while confirmatory use remains blocked.
-4. After those decisions, build the canonical XNYS-indexed daily panel and feature-status layer.
+1. Build the locked eight-feature status layer on the canonical panel, including indicator resets after missing or invalid prices.
+2. Investigate or replace the missing ABNB and EXPE observations for 2026-09-22 without filling them silently.
+3. Obtain supporting point-in-time availability/corporate-action evidence and document data usage rights.
+4. Freeze the final-test period before any confirmatory evaluation.
 
 ## Blockers and open inputs
 
@@ -36,3 +37,5 @@
 ## Latest verification
 
 Initial validation completed with Python 3.12.10 and XNYS from `exchange-calendars==4.13.2`. All current/archived hashes match; structural and numeric checks passed. Full findings are in `research/abnb/validation/DATA_VALIDATION.md` and `data_validation.json`.
+
+Canonical-panel verification on 2026-09-25: `python -m pytest research/abnb/tests/test_panel.py -q` passed 7 tests. The default panel contains 5,808 rows (1,452 XNYS sessions x 4 securities): 5,806 `VALID`, 2 `MISSING_SOURCE`, and no invalid prices. A fresh input-validation run reconfirmed byte integrity; no derived panel snapshot was persisted.
