@@ -95,3 +95,14 @@
 - Consequences: `research/abnb/data/interim/daily_features.parquet` is reproducible but must not be treated as confirmatory-ready while source evidence and rights remain unresolved. Rebuilds create a new timestamp and artifact checksum and must update the data registry when retained or used. Monthly forecast-origin sampling remains a separate downstream step.
 - Evidence: `research/abnb/pipeline/daily_features.py`; `research/abnb/tests/test_daily_features.py`; FEAT-001 in `PROJECT_DATA.md` (62 total ABNB tests passed on 2026-09-25).
 - Supersedes: none.
+
+### D008 — Sample monthly features only from completed daily month-ends
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: feature
+- Decision: Create the monthly feature table by selecting the existing daily-feature row on the final XNYS session of each completed calendar month. Exclude a partial terminal month whose actual XNYS month-end is absent. Copy all eight feature values and their statuses unchanged; do not invoke or reproduce any feature calculation during sampling.
+- Rationale: The locked indicators are daily-history calculations. Recomputing them on monthly observations would change their definitions, while accepting a partial month would create a forecast origin that violates the month-end contract.
+- Consequences: The current development artifact contains 69 origins from December 2020 through August 2026 and excludes partial September 2026. Monthly rebuilds depend on and record the exact daily artifact hash. Target maturity, issuance timing, and eligibility are separate downstream contracts.
+- Evidence: `research/abnb/pipeline/monthly_features.py`; `research/abnb/tests/test_monthly_features.py`; MONTH-001 in `PROJECT_DATA.md` (67 total ABNB tests passed on 2026-09-25).
+- Supersedes: none.
