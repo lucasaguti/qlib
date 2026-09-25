@@ -157,6 +157,33 @@ def _fixed_window(
     return history, None
 
 
+def _require_anchor_date(
+    history: _PriceHistory, anchor_date: Any | None, *, name: str
+) -> None:
+    """Require a dated history to end on an explicitly requested anchor."""
+
+    if anchor_date is None:
+        return
+    if history.index is None:
+        raise ValueError(f"{name} requires a pandas index when anchor_date is set")
+    if len(history.index) == 0:
+        raise ValueError(f"{name} does not contain the requested anchor date")
+
+    expected = pd.Timestamp(anchor_date)
+    actual = pd.Timestamp(history.index[-1])
+    if pd.isna(expected) or pd.isna(actual):
+        raise ValueError("anchor_date and the final session index must be valid dates")
+    if expected.tzinfo is not None:
+        expected = expected.tz_localize(None)
+    if actual.tzinfo is not None:
+        actual = actual.tz_localize(None)
+    if actual.normalize() != expected.normalize():
+        raise ValueError(
+            f"{name} must end on anchor date {expected.date()}; "
+            f"found {actual.date()}"
+        )
+
+
 def abnb_mom_12_2(
     closes: Sequence[Any] | pd.Series,
     statuses: Sequence[Any] | pd.Series | None = None,
@@ -286,10 +313,13 @@ def abnb_macd_hist_norm(
 def spy_ret_5d(
     closes: Sequence[Any] | pd.Series,
     statuses: Sequence[Any] | pd.Series | None = None,
+    *,
+    anchor_date: Any | None = None,
 ) -> FeatureResult:
     """Return SPY's five-session adjusted-close return."""
 
     history, failure = _fixed_window(closes, statuses, 6, name="spy_closes")
+    _require_anchor_date(history, anchor_date, name="SPY history")
     if failure:
         return failure
     window = history.values[-6:]
@@ -301,6 +331,8 @@ def peer_ret_5d(
     bkng_closes: Sequence[Any] | pd.Series,
     expe_statuses: Sequence[Any] | pd.Series | None = None,
     bkng_statuses: Sequence[Any] | pd.Series | None = None,
+    *,
+    anchor_date: Any | None = None,
 ) -> FeatureResult:
     """Return the equal-weight EXPE/BKNG five-session return.
 
@@ -310,6 +342,8 @@ def peer_ret_5d(
 
     expe = _coerce_history(expe_closes, expe_statuses, name="expe_closes")
     bkng = _coerce_history(bkng_closes, bkng_statuses, name="bkng_closes")
+    _require_anchor_date(expe, anchor_date, name="EXPE history")
+    _require_anchor_date(bkng, anchor_date, name="BKNG history")
     if len(expe.values) != len(bkng.values):
         raise ValueError("EXPE and BKNG histories must have equal lengths")
     if (
@@ -339,10 +373,13 @@ def peer_ret_5d(
 def spy_rvol_20d(
     closes: Sequence[Any] | pd.Series,
     statuses: Sequence[Any] | pd.Series | None = None,
+    *,
+    anchor_date: Any | None = None,
 ) -> FeatureResult:
     """Return annualized sample volatility of SPY's latest 20 log returns."""
 
     history, failure = _fixed_window(closes, statuses, 21, name="spy_closes")
+    _require_anchor_date(history, anchor_date, name="SPY history")
     if failure:
         return failure
     window = history.values[-21:]

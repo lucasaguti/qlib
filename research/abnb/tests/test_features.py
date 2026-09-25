@@ -1,5 +1,8 @@
+import copy
 import math
+from pathlib import Path
 
+import exchange_calendars as xcals
 import pandas as pd
 import pytest
 
@@ -20,7 +23,10 @@ from research.abnb.pipeline.panel import (
     MISSING_SOURCE,
     UNAVAILABLE_BY_CUTOFF,
     VALID,
+    build_daily_panel,
 )
+
+RAW_ROOT = Path(__file__).resolve().parents[1] / "data" / "raw"
 
 
 def test_fixed_return_features_use_exact_required_session_offsets():
@@ -44,8 +50,33 @@ def test_fixed_return_features_use_exact_required_session_offsets():
     ],
 )
 def test_each_single_security_feature_enforces_minimum_history(function, required):
-    result = function([100.0] * (required - 1))
-    assert result == FeatureResult(None, INSUFFICIENT_HISTORY)
+    for length in range(required):
+        result = function([100.0] * length)
+        assert result == FeatureResult(None, INSUFFICIENT_HISTORY)
+
+
+@pytest.mark.parametrize(
+    ("function", "closes"),
+    [
+        (abnb_mom_12_2, [100.0] * 253),
+        (abnb_ret_21d, [100.0] * 22),
+        (abnb_rsi_14, [100.0] * 15),
+        (abnb_ema_gap_20, [100.0] * 20),
+        (abnb_macd_hist_norm, [100.0] * 34),
+        (spy_ret_5d, [100.0] * 6),
+        (spy_rvol_20d, [100.0] * 21),
+    ],
+)
+def test_first_valid_output_is_exactly_at_documented_boundary(function, closes):
+    assert function(closes).status == VALID
+
+
+def test_peer_first_valid_output_is_on_sixth_exact_session():
+    for length in range(6):
+        assert peer_ret_5d([100.0] * length, [100.0] * length) == FeatureResult(
+            None, INSUFFICIENT_HISTORY
+        )
+    assert peer_ret_5d([100.0] * 6, [100.0] * 6) == FeatureResult(0.0, VALID)
 
 
 def test_momentum_requires_every_session_not_only_priced_endpoints():
@@ -184,3 +215,187 @@ def test_only_final_required_window_controls_nonrecursive_return():
     closes = [None] + [100.0] * 6
     statuses = [MISSING_SOURCE] + [VALID] * 6
     assert spy_ret_5d(closes, statuses) == FeatureResult(0.0, VALID)
+
+
+def test_session_offsets_follow_xnys_positions_not_calendar_days():
+    calendar = xcals.get_calendar("XNYS")
+    sessions = calendar.sessions_in_range("2025-11-21", "2025-12-01")
+    assert len(sessions) == 6
+    assert (sessions[-1] - sessions[0]).days == 10
+
+    closes = pd.Series([100.0, 102.0, 104.0, 106.0, 108.0, 110.0], index=sessions)
+    result = spy_ret_5d(closes, anchor_date=sessions[-1])
+
+    assert result.status == VALID
+    assert result.value == pytest.approx(0.1)
+
+
+def test_spy_requires_an_exact_anchor_date_and_does_not_use_previous_session():
+    calendar = xcals.get_calendar("XNYS")
+    sessions = calendar.sessions_in_range("2026-01-02", "2026-01-12")
+    anchor = sessions[-1]
+    closes_without_anchor = pd.Series([100.0] * 6, index=sessions[-7:-1])
+
+    with pytest.raises(ValueError, match="must end on anchor date"):
+        spy_ret_5d(closes_without_anchor, anchor_date=anchor)
+
+    closes_on_grid = pd.Series([100.0] * 6, index=sessions[-6:])
+    statuses = pd.Series(
+        [VALID] * 5 + [MISSING_SOURCE], index=sessions[-6:]
+    )
+    assert spy_ret_5d(
+        closes_on_grid, statuses, anchor_date=anchor
+    ) == FeatureResult(None, MISSING_SOURCE)
+
+
+@pytest.mark.parametrize(
+    ("unavailable_peer", "expected_status"),
+    [("EXPE", MISSING_SOURCE), ("BKNG", UNAVAILABLE_BY_CUTOFF)],
+)
+def test_peer_return_is_null_if_either_peer_is_unavailable(
+    unavailable_peer, expected_status
+):
+    dates = xcals.get_calendar("XNYS").sessions_in_range(
+        "2026-01-02", "2026-01-09"
+    )
+    expe_statuses = pd.Series([VALID] * 6, index=dates)
+    bkng_statuses = pd.Series([VALID] * 6, index=dates)
+    if unavailable_peer == "EXPE":
+        expe_statuses.iloc[-1] = MISSING_SOURCE
+    else:
+        bkng_statuses.iloc[-1] = UNAVAILABLE_BY_CUTOFF
+
+    result = peer_ret_5d(
+        pd.Series([100.0] * 6, index=dates),
+        pd.Series([200.0] * 6, index=dates),
+        expe_statuses,
+        bkng_statuses,
+        anchor_date=dates[-1],
+    )
+
+    assert result == FeatureResult(None, expected_status)
+
+
+def test_peer_histories_must_both_end_on_the_exact_anchor_date():
+    dates = xcals.get_calendar("XNYS").sessions_in_range(
+        "2026-01-02", "2026-01-12"
+    )
+    anchor = dates[-1]
+    prior_dates = dates[-7:-1]
+
+    with pytest.raises(ValueError, match="must end on anchor date"):
+        peer_ret_5d(
+            pd.Series([100.0] * 6, index=prior_dates),
+            pd.Series([200.0] * 6, index=prior_dates),
+            anchor_date=anchor,
+        )
+
+
+@pytest.mark.parametrize(
+    ("function", "required", "fresh_segment"),
+    [
+        (abnb_rsi_14, 15, [100.0 + value * value for value in range(15)]),
+        (abnb_ema_gap_20, 20, [100.0 + value * value for value in range(20)]),
+        (
+            abnb_macd_hist_norm,
+            34,
+            [100.0 + value * value for value in range(34)],
+        ),
+    ],
+)
+def test_recursive_indicators_restart_seed_after_gap(
+    function, required, fresh_segment
+):
+    old_segment = [500.0 - value for value in range(40)]
+    closes = old_segment + [None] + fresh_segment[:-1]
+    statuses = [VALID] * len(old_segment) + [MISSING_SOURCE] + [VALID] * (
+        required - 1
+    )
+
+    assert function(closes, statuses) == FeatureResult(None, MISSING_SOURCE)
+
+    closes.append(fresh_segment[-1])
+    statuses.append(VALID)
+    restarted = function(closes, statuses)
+    freshly_seeded = function(fresh_segment)
+    assert restarted.status == VALID
+    assert restarted.value == pytest.approx(freshly_seeded.value)
+
+
+@pytest.mark.parametrize(
+    ("function", "required"),
+    [
+        (abnb_mom_12_2, 253),
+        (abnb_ret_21d, 22),
+        (abnb_rsi_14, 15),
+        (abnb_ema_gap_20, 20),
+        (abnb_macd_hist_norm, 34),
+        (spy_ret_5d, 6),
+        (spy_rvol_20d, 21),
+    ],
+)
+def test_single_security_functions_do_not_mutate_inputs(function, required):
+    closes = [100.0 + value for value in range(required)]
+    statuses = [VALID] * required
+    original_closes = copy.deepcopy(closes)
+    original_statuses = copy.deepcopy(statuses)
+
+    function(closes, statuses)
+
+    assert closes == original_closes
+    assert statuses == original_statuses
+
+
+def test_peer_function_does_not_mutate_inputs():
+    expe = [100.0, 101.0, 102.0, 103.0, 104.0, 105.0]
+    bkng = [200.0, 201.0, 202.0, 203.0, 204.0, 205.0]
+    expe_statuses = [VALID] * 6
+    bkng_statuses = [VALID] * 6
+    originals = copy.deepcopy((expe, bkng, expe_statuses, bkng_statuses))
+
+    peer_ret_5d(expe, bkng, expe_statuses, bkng_statuses)
+
+    assert (expe, bkng, expe_statuses, bkng_statuses) == originals
+
+
+def _panel_history(panel, security, anchor):
+    history = panel.xs(security, level="security").loc[:anchor]
+    return history["adjusted_close"], history["status"]
+
+
+@pytest.mark.parametrize("anchor", ["2026-09-22", "2026-09-23"])
+def test_real_gap_invalidates_abnb_recursive_segments_and_peer_window(anchor):
+    panel = build_daily_panel(RAW_ROOT, end="2026-09-23")
+    anchor_date = pd.Timestamp(anchor)
+
+    if anchor == "2026-09-22":
+        prior_anchor = pd.Timestamp("2026-09-21")
+        prior_abnb = _panel_history(panel, "ABNB", prior_anchor)
+        for function in (abnb_rsi_14, abnb_ema_gap_20, abnb_macd_hist_norm):
+            assert function(*prior_abnb).status == VALID
+        prior_expe = _panel_history(panel, "EXPE", prior_anchor)
+        prior_bkng = _panel_history(panel, "BKNG", prior_anchor)
+        assert peer_ret_5d(
+            prior_expe[0],
+            prior_bkng[0],
+            prior_expe[1],
+            prior_bkng[1],
+            anchor_date=prior_anchor,
+        ).status == VALID
+
+    abnb_closes, abnb_statuses = _panel_history(panel, "ABNB", anchor_date)
+
+    for function in (abnb_rsi_14, abnb_ema_gap_20, abnb_macd_hist_norm):
+        assert function(abnb_closes, abnb_statuses) == FeatureResult(
+            None, MISSING_SOURCE
+        )
+
+    expe_closes, expe_statuses = _panel_history(panel, "EXPE", anchor_date)
+    bkng_closes, bkng_statuses = _panel_history(panel, "BKNG", anchor_date)
+    assert peer_ret_5d(
+        expe_closes,
+        bkng_closes,
+        expe_statuses,
+        bkng_statuses,
+        anchor_date=anchor_date,
+    ) == FeatureResult(None, MISSING_SOURCE)
