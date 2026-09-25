@@ -54,3 +54,6 @@ node_modules/
 .aider*
 
 .venv/
+
+# ABNB research inputs and generated datasets are local, immutable, and untracked.
+research/abnb/data/

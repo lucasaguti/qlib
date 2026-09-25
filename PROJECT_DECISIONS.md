@@ -40,3 +40,25 @@
 - Consequences: The concrete project directory layout must be chosen when implementation begins and then recorded here.
 - Evidence: Existing `qlib.data.dataset`, `qlib.contrib.model.linear.LinearModel`, and `qlib.workflow` extension points.
 - Supersedes: none.
+
+### D003 — Keep supplied inputs in an untracked project raw-data layer
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: data
+- Decision: Preserve supplied current files, archived versions, manifests, and specifications byte-for-byte under `research/abnb/data/raw/`; exclude that directory from Git.
+- Rationale: Keep the study self-contained while protecting immutable source material and avoiding accidental publication of potentially restricted data.
+- Consequences: Transformations must write to separate interim/processed layers. Source changes require a new version and registry entry.
+- Evidence: `.gitignore`, `PROJECT_DATA.md`, and the registered raw paths.
+- Supersedes: none.
+
+### D004 — Restrict initial Yahoo/yfinance inputs to development use
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: data
+- Decision: Classify the registered inputs as `DEVELOPMENT_ONLY` until point-in-time price/adjustment availability evidence and usage rights are documented.
+- Rationale: Mechanical validation passed, but the manifests' point-in-time assertions lack retained supporting evidence and do not state usage rights.
+- Consequences: Pipeline and contract tests may use the files if clearly labeled development work; confirmatory evaluation and claims remain blocked.
+- Evidence: `research/abnb/validation/DATA_VALIDATION.md` and `data_validation.json`.
+- Supersedes: none.
