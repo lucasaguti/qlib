@@ -51,6 +51,7 @@ Any PDF interpretation that changes or clarifies a formula, seed, null behavior,
 |---|---|---|---|---|---|---|---|
 | VAL-001 | `research/abnb/validation/data_validation.json` | SRC-ABNB-001, SRC-BKNG-001, SRC-EXPE-001, SRC-SPY-001 | `pipeline/validate_inputs.py`; `exchange-calendars==4.13.2` | Working tree at Qlib `be725493` | Full registered source coverage; no modeling split | `b1435e3c31161c7ee67a032956dfe757de6ed03285c06b01b13e416ac28168b8` | Completed; development-only readiness |
 | VAL-002 | `research/abnb/validation/DATA_VALIDATION.md` | VAL-001 | Human-readable validation summary | Working tree at Qlib `be725493` | Full registered source coverage; no modeling split | `9dd3bd1d2317491d06078f9d36bb5548b74e0b49b2115dce7ba02420eed5f896` | Completed |
+| FEAT-001 | `research/abnb/data/interim/daily_features.parquet` | SRC-ABNB-001, SRC-BKNG-001, SRC-EXPE-001, SRC-SPY-001; Dataset1/2 manifests; CAL-XNYS-001 | `pipeline/daily_features.py` schema v1; `exchange-calendars==4.13.2`; `pyarrow==23.0.1` | Git `0ffc0b841ef6f88ed4f9d779d36f8df56c857378`; dirty worktree recorded in artifact | 2020-12-10 through 2026-09-23; 1,452 daily sessions; no modeling split | `ba147b9470e5c267e2e0ff2fac8850f5e0554009adfc1715b5042fc105f449b6` | Completed; development-only; untracked |
 
 ## Final-test access log
 

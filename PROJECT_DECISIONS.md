@@ -84,3 +84,14 @@
 - Consequences: Callers must provide complete common-calendar daily rows, preferably with canonical panel statuses. Daily panel orchestration and monthly sampling remain separate follow-up components. Passing only price sequences cannot reconstruct an unavailable-by-cutoff state, so explicit statuses are required to retain it.
 - Evidence: `research/abnb/pipeline/features.py`; `research/abnb/tests/test_features.py` (50 focused tests and 57 total ABNB tests passed on 2026-09-25); `research/abnb/data/raw/specifications/ABNB_predictive_indicators1.pdf` revision 2.
 - Supersedes: none.
+
+### D007 — Persist a self-describing development daily feature table
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: feature
+- Decision: Materialize one row per canonical XNYS session with the eight locked nullable feature values and one categorical status per feature. Repeat calendar identity, source versions, parent source and manifest hashes, UTC build time, Git revision, dirty-worktree state, and `DEVELOPMENT_ONLY` readiness as ordinary columns, and also retain the table contract in Parquet metadata. Write atomically to the ignored interim-data layer.
+- Rationale: Explicit row-level provenance remains available to readers that do not preserve pandas metadata, while embedded metadata makes the artifact self-describing for pandas-aware consumers. Reusing the canonical panel and tested feature primitives avoids a second implementation of calendar alignment, status precedence, or indicator formulas.
+- Consequences: `research/abnb/data/interim/daily_features.parquet` is reproducible but must not be treated as confirmatory-ready while source evidence and rights remain unresolved. Rebuilds create a new timestamp and artifact checksum and must update the data registry when retained or used. Monthly forecast-origin sampling remains a separate downstream step.
+- Evidence: `research/abnb/pipeline/daily_features.py`; `research/abnb/tests/test_daily_features.py`; FEAT-001 in `PROJECT_DATA.md` (62 total ABNB tests passed on 2026-09-25).
+- Supersedes: none.
