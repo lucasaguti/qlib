@@ -2,10 +2,11 @@
 
 > **Dynamic document.** Update this file after every material implementation, validation, experiment, or change in blockers. Keep it factual and current; do not rewrite the charter in `PROJECT_INNATE.md`.
 
-**Last updated:** 2026-09-25  
+**Last updated:** 2026-09-26
+
 **Repository baseline:** Qlib checkout at `d19677c5`
 
-**Current phase:** evaluation protocol frozen; development-only feature diagnostics complete; evaluation implementation pending
+**Current phase:** evaluation protocol implemented and verified; development-only pseudo-out-of-sample evaluation complete; confirmatory final evaluation blocked
 **Final test status:** frozen as the 12 origins from 2025-06-30 through 2026-05-29; no post-freeze access has occurred
 
 ## Current state
@@ -23,15 +24,17 @@
 - Three-calendar-month target construction is implemented in `research/abnb/pipeline/targets.py`. It uses only the exact reference- and maturity-session ABNB adjusted closes, preserves unavailable source states, retains immature origins with null labels, and provides an issuance-time selector that admits only finite `VALID` labels with `label_available_at <= issued_at_utc`. The untracked `monthly_targets.parquet` contains 54 valid development labels, 12 frozen final-test rows with prices and labels withheld, and 3 post-test immature rows. Its price read stops at 2025-08-29, the last maturity required for development, so no frozen final-test target was constructed or read.
 - Development-only feature diagnostics are implemented in `research/abnb/pipeline/feature_diagnostics.py` and reported under `research/abnb/diagnostics/development_features/`. Filtered Arrow scans admit only the 54 origins through 2025-05-30; raw-source action reads stop at that cutoff. The report covers status-bearing missingness, distributions and dated extremes, temporal and fixed-subperiod stability, Pearson/Spearman correlations, complete-case VIF/condition diagnostics, raw-versus-adjusted corporate-action sensitivity, and overlap-aware effective sample size. It materialized no final-test or post-test feature/target row and did not alter the locked predictors or protocol.
 - The diagnostics retain 42 complete eight-feature origins. The largest absolute Pearson correlation is 0.901 between `ABNB_RSI_14` and `ABNB_EMA_GAP_20`; their VIFs are 7.70 and 8.46, respectively. First-to-last-subperiod standardized mean movement is largest for `ABNB_MOM_12_2` at 0.633; `SPY_RVOL_20D` has a 1.56 standard-deviation ratio and a dated 0.533 Tukey extreme at 2025-04-30. The design-based non-overlap equivalent is 18 for all 54 valid development targets and 14 for the 42 complete-feature targets. These are implementation/stability diagnostics, not evidence of predictiveness.
+- Expanding-window evaluation is implemented in `research/abnb/pipeline/evaluation.py`. It enforces common complete-case scoring, issuance-time matured-label admission, at least 24 eligible Ridge training rows, expanding one-origin-ahead inner validation, fold-local population scaling, the frozen alpha grid and tie rule, paired circular moving-block bootstrap intervals, HAC(2) comparisons, and eight independently retuned leave-one-feature-out ablations with Holm correction. The default runner performs filtered development-only Parquet scans and has no final-test execution mode.
+- Development-only pseudo-out-of-sample artifact `EVAL-DEV-OOS-001` is reported under `research/abnb/evaluation/development_oos/`. Eight origins from 2024-10-31 through 2025-05-30 meet all training, tuning, feature, and target rules. Ridge RMSE is 0.070715 versus 0.070193 for the matured expanding mean and 0.069458 for zero return; Ridge out-of-sample R-squared versus the expanding mean is -0.014926 and directional accuracy is 0.375 versus a 0.500 class-frequency baseline. The paired Ridge-minus-expanding-mean squared-error estimate is 0.00007354 (three-month circular-block 95% interval -0.00039409 to 0.00054154; HAC(2) p=0.783437). No Holm-adjusted ablation is significant. These are low-precision development diagnostics, not confirmatory evidence.
 - A current-provider corporate-action recheck matches every registered dividend and split row, but does not establish historical adjustment-state versions or availability. Per-observation point-in-time price and adjustment evidence remains blocked.
 - Extraction rights are blocked absent express permission; retention, ML-processing, and backup rights remain unknown. The supplied inputs remain `DEVELOPMENT_ONLY`. The complete review and evidence requirements are in `research/abnb/validation/DATA_LIMITATIONS.md`.
-- No persisted processed dataset, frozen split, trained model, or model result exists.
+- No confirmatory trained model or final-test result exists. The development-only evaluation artifact and per-origin forecast file are persisted locally and registered below.
 
 ## Immediate next actions
 
 1. Acquire a licensed replacement source that expressly permits extraction, retention, ML processing, and backup and supplies price/adjustment versions plus availability evidence.
 2. Ingest any 2026-09-22 recovery as a new immutable source version, validate it, and rebuild/register downstream artifacts; retain `MISSING_SOURCE` until then.
-3. Implement and test `EVAL-PROTOCOL-001`, including split isolation, common eligibility, fold-local scaling/tuning, dependence-aware metrics, and the predefined ablations, without accessing final-test outcomes.
+3. After the data blockers are resolved and replacement inputs are validated, rebuild and register the feature/target snapshots, verify the evaluator against them without opening the final block, then conduct the single logged final evaluation authorized by `EVAL-PROTOCOL-001`.
 
 ## Blockers and open inputs
 
@@ -44,6 +47,8 @@
 | Final test execution | Frozen but not accessed | Implement and verify the protocol on development-only fixtures; resolve data blockers before the single authorized evaluation |
 
 ## Latest verification
+
+Evaluation implementation and development-only run on 2026-09-26 with Python 3.12.10, scikit-learn 1.9.1, statsmodels 0.15.0, NumPy 2.5.3, pandas 2.3.3, and PyArrow 23.0.1: `.venv\Scripts\python.exe -m pytest research/abnb/tests/test_evaluation.py -q` passed all 9 focused tests, and `.venv\Scripts\python.exe -m pytest research/abnb/tests -q` passed all 100 ABNB tests. The evaluation tests cover cutoff-filtered loading, maturity gating, fold-local scaling, chronological inner validation and alpha tie-breaking, future-data invariance, circular block construction, HAC inference, direction handling, fixed temporal summaries, and Holm correction. The development runner scanned only origins through 2025-05-30 and materialized no final-test row. `compileall` completed successfully. Black is not installed in the project environment; `git diff --check` passed after normalizing the changed status line.
 
 Data-limitation review on 2026-09-25 America/New_York (online checks completed 2026-09-26 UTC): confirmed 2026-09-22 was an XNYS session; corroborated later ABNB and EXPE observations without modifying or supplementing the registered raw inputs; and matched the current provider's explicit corporate-action lists to all four registered CSVs. Rights review did not establish the required extraction, retention, ML-processing, or backup grants. See `research/abnb/validation/DATA_LIMITATIONS.md` and D010. `.venv\Scripts\python.exe -m pytest research/abnb/tests/test_panel.py -q` passed all 7 tests (4 dependency deprecation warnings); all four registered raw hashes and the two validation-document hashes matched `PROJECT_DATA.md`; `git diff --check` passed. At that verification stage, no final-test period existed and no final-test access had occurred.
 
