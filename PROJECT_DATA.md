@@ -75,9 +75,19 @@ Any PDF interpretation that changes or clarifies a formula, seed, null behavior,
 | FEAT-001 | `research/abnb/data/interim/daily_features.parquet` | SRC-ABNB-001, SRC-BKNG-001, SRC-EXPE-001, SRC-SPY-001; Dataset1/2 manifests; CAL-XNYS-001 | `pipeline/daily_features.py` schema v1; `exchange-calendars==4.13.2`; `pyarrow==23.0.1` | Git `0ffc0b841ef6f88ed4f9d779d36f8df56c857378`; dirty worktree recorded in artifact | 2020-12-10 through 2026-09-23; 1,452 daily sessions; no modeling split | `ba147b9470e5c267e2e0ff2fac8850f5e0554009adfc1715b5042fc105f449b6` | Completed; development-only; untracked |
 | MONTH-001 | `research/abnb/data/interim/monthly_features.parquet` | FEAT-001 (`ba147b9470e5c267e2e0ff2fac8850f5e0554009adfc1715b5042fc105f449b6`); CAL-XNYS-001 | `pipeline/monthly_features.py` schema v2; final XNYS reference session for each completed calendar month; exact close/cutoff, next-session-open issuance, final-session maturity three calendar months later, and maturity-close label availability; `exchange-calendars==4.13.2`; `pyarrow==23.0.1` | Git `672f54198e1ff4d926dfe3b0ebdfbbe288d9e3ad`; dirty worktree recorded in artifact | 2020-12 through 2026-08; 69 monthly origins; partial 2026-09 excluded; scheduled maturities through 2026-11; no modeling split | `7c774c32f4fd9a0582968bbef7a16cdacf796c583a301613df4e2b2aff4c7581` | Completed; development-only; untracked |
 
+## Frozen protocols
+
+| ID | Path | Purpose/version | Frozen scope | SHA-256 | State |
+|---|---|---|---|---|---|
+| EVAL-PROTOCOL-001 | `research/abnb/config/evaluation_protocol.json` | Machine-readable evaluation protocol, version 1 | Development origins through 2025-05-30; 12 final-test origins from 2025-06-30 through 2026-05-29; post-test origins from 2026-06 quarantined | `dd74ed2a387cfa9caab496fcfe12cdcda58b8a1bcdf689b009e20da0ec2b154c` | Frozen 2026-09-25 before target construction or feature/target analysis; implementation pending |
+| EVAL-PROTOCOL-001-NARRATIVE | `research/abnb/EVALUATION_PROTOCOL.md` | Human-readable evaluation protocol, version 1 | Eligibility, minimum history, Ridge tuning/scaling, dependence-aware inference, ablations, multiplicity, reporting, and isolation | `d39eaf767d96e7b24d921dd112d972d8f801279f2261e48ce73a73b0d6a5b4b2` | Frozen 2026-09-25; explanatory companion to the JSON contract |
+
 ## Final-test access log
 
-The final period is not yet selected. Once frozen, append every access, including failed or diagnostic access.
+The final period is frozen as the 12 origins from 2025-06-30 through
+2026-05-29. Append every final-test row or outcome-derived access after the freeze,
+including failed or diagnostic access. Selecting the period from calendar and
+coverage constraints did not read targets and is not an access event.
 
 | Timestamp (UTC) | Actor | Purpose | Artifact/query | Authorization | Outcome |
 |---|---|---|---|---|---|

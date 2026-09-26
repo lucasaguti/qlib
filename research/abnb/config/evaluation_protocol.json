@@ -1,0 +1,113 @@
+{
+  "protocol_id": "EVAL-PROTOCOL-001",
+  "version": 1,
+  "frozen_at": "2026-09-25",
+  "calendar": {
+    "id": "CAL-XNYS-001",
+    "name": "XNYS",
+    "implementation": "exchange-calendars==4.13.2"
+  },
+  "periods": {
+    "development_origin_start": "2020-12-31",
+    "development_origin_end": "2025-05-30",
+    "final_test_origin_start": "2025-06-30",
+    "final_test_origin_end": "2026-05-29",
+    "final_test_origin_count": 12,
+    "final_test_reference_sessions": [
+      "2025-06-30",
+      "2025-07-31",
+      "2025-08-29",
+      "2025-09-30",
+      "2025-10-31",
+      "2025-11-28",
+      "2025-12-31",
+      "2026-01-30",
+      "2026-02-27",
+      "2026-03-31",
+      "2026-04-30",
+      "2026-05-29"
+    ],
+    "post_test_quarantine_origin_start": "2026-06-30"
+  },
+  "eligibility": {
+    "required_feature_names": [
+      "ABNB_MOM_12_2",
+      "ABNB_RET_21D",
+      "ABNB_RSI_14",
+      "ABNB_EMA_GAP_20",
+      "ABNB_MACD_HIST_NORM",
+      "SPY_RET_5D",
+      "PEER_RET_5D",
+      "SPY_RVOL_20D"
+    ],
+    "required_feature_status": "VALID",
+    "require_finite_feature_values": true,
+    "require_valid_finite_target": true,
+    "imputation": "none",
+    "common_evaluation_origins_for_all_models": true
+  },
+  "training": {
+    "window": "expanding",
+    "minimum_eligible_matured_observations": 24,
+    "admit_label_only_when": "label_available_at <= issued_at_utc",
+    "ridge_training_rows": "valid_finite_target_and_all_eight_features_VALID_and_finite",
+    "historical_average_training_rows": "all_valid_finite_matured_targets_regardless_of_feature_status",
+    "inner_validation": "expanding one-origin-ahead walk-forward",
+    "minimum_inner_validation_predictions": 6,
+    "selection_loss": "mean_squared_error"
+  },
+  "ridge": {
+    "alpha_grid": [
+      0.0001,
+      0.001,
+      0.01,
+      0.1,
+      1.0,
+      10.0,
+      100.0,
+      1000.0,
+      10000.0
+    ],
+    "alpha_tie_break": "largest_alpha_within_absolute_1e-12_of_minimum_inner_mse",
+    "fit_intercept": true,
+    "penalize_intercept": false,
+    "scaling": {
+      "method": "standardize",
+      "mean": "training_fold_only",
+      "standard_deviation": "training_fold_only_population_ddof_0",
+      "apply_to": "validation_or_test_row_after_fit",
+      "zero_variance_scale": 1.0
+    }
+  },
+  "uncertainty": {
+    "primary_method": "circular_moving_block_bootstrap",
+    "resampling_unit": "paired_monthly_final_test_origin",
+    "block_length_months": 3,
+    "replications": 10000,
+    "seed": 20260925,
+    "confidence_level": 0.95,
+    "interval": "percentile",
+    "dependence_sensitivity_block_lengths_months": [2, 4, 6],
+    "hypothesis_test_p_values": "two_sided_Newey_West_HAC_intercept_test_with_max_lag_2"
+  },
+  "feature_tests": {
+    "individual_feature_tests": "none",
+    "ablation_family": "eight_leave_one_feature_out_ridge_models",
+    "ablation_loss": "squared_error",
+    "ablation_comparison": "paired_ablated_model_loss_minus_full_model_loss",
+    "retune_each_ablation_inside_each_outer_training_fold": true,
+    "family_size": 8,
+    "familywise_alpha": 0.05,
+    "multiple_testing_procedure": "Holm_step_down",
+    "all_tests_two_sided": true,
+    "exploratory_only": true
+  },
+  "isolation": {
+    "development_must_not_inspect_final_test_feature_values": true,
+    "development_must_not_read_final_test_targets": true,
+    "development_must_not_use_final_test_metrics_or_relationships": true,
+    "authorized_final_evaluation_is_single_pass": true,
+    "log_every_final_test_row_or_outcome_access_in": "PROJECT_DATA.md",
+    "final_test_cannot_change_protocol": true
+  }
+}
