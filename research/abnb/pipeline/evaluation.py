@@ -608,13 +608,26 @@ def evaluate_forecasts(
     )
 
 
-def _write_report(path: Path, result: dict[str, Any]) -> None:
+def _write_report(
+    path: Path,
+    result: dict[str, Any],
+    *,
+    title: str = "Development-Only Expanding-Window Forecast Evaluation",
+    notice: Sequence[str] = (
+        "This is a development-period pseudo-out-of-sample diagnostic, not the frozen",
+        "confirmatory final-test result. Source rights and point-in-time adjustment",
+        "evidence remain unresolved, and no final-test row was read.",
+    ),
+    interpretation: Sequence[str] = (
+        "These results can validate the implementation and show development-period",
+        "behavior. They cannot support the confirmatory research claim. The isolated",
+        "12-origin final test remains unopened until the data blockers are resolved.",
+    ),
+) -> None:
     lines = [
-        "# Development-Only Expanding-Window Forecast Evaluation",
+        f"# {title}",
         "",
-        "> This is a development-period pseudo-out-of-sample diagnostic, not the frozen",
-        "> confirmatory final-test result. Source rights and point-in-time adjustment",
-        "> evidence remain unresolved, and no final-test row was read.",
+        *[f"> {line}" for line in notice],
         "",
         f"Scored origins: **{result['results']['scored_origins']}** "
         f"({result['results']['scored_origin_start'][:10]} through "
@@ -711,9 +724,7 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
             "",
             "## Interpretation boundary",
             "",
-            "These results can validate the implementation and show development-period",
-            "behavior. They cannot support the confirmatory research claim. The isolated",
-            "12-origin final test remains unopened until the data blockers are resolved.",
+            *interpretation,
             "",
         ]
     )

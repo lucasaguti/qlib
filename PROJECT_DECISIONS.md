@@ -172,3 +172,14 @@
 - Consequences: `EVAL-DEV-OOS-001` contains only development-period pseudo-out-of-sample diagnostics and cannot support a confirmatory claim. The eight scored development origins show no benchmark-relative Ridge improvement and very low precision; they do not authorize changes to the locked features, model, thresholds, or final protocol. The final 12-origin block remains unopened, and its eventual single access must still be logged.
 - Evidence: `research/abnb/pipeline/evaluation.py`; `research/abnb/tests/test_evaluation.py`; `research/abnb/evaluation/development_oos/`; EVAL-DEV-OOS-001 in `PROJECT_DATA.md`.
 - Supersedes: none.
+
+### D015 — Preserve the single final evaluation as inconclusive
+
+- Date: 2026-09-26
+- Status: accepted
+- Scope: data | model | evaluation
+- Decision: Following the user's explicit authorization, open the exact 12 frozen final origins once with the unchanged `EVAL-PROTOCOL-001` pipeline. Classify the primary finding conservatively as positive only when both the three-month circular-block 95% interval and HAC(2) test establish lower Ridge squared error, negative only when both establish higher Ridge squared error, and inconclusive otherwise. Preserve all outputs as `EVAL-FINAL-001`; do not rerun, retune, alter features, or change preprocessing from the result.
+- Rationale: Ridge's point estimates were slightly better than both benchmarks, but the primary Ridge-minus-expanding-mean squared-error estimate of -0.00053867 had a 95% interval of [-0.00130234, 0.00007841] and HAC(2) p=0.264871. Twelve overlapping outcomes provide insufficient precision for a positive claim. The source snapshot also still lacks verified provider rights and historical point-in-time price/adjustment availability evidence.
+- Consequences: The result is `INCONCLUSIVE`, not evidence that the locked predictors reliably improve ABNB forecasts. All 12 scheduled origins were eligible; Ridge RMSE was 0.138438, expanding-mean RMSE 0.140370, zero-return RMSE 0.139749, and Ridge directional accuracy 0.4167 versus a 0.5833 class-frequency baseline. No Holm-adjusted ablation was significant. A post-run readback repaired only missing source-inventory metadata caused by a misplaced return; execution-code hashes remain preserved and forecasts/metrics were not recomputed.
+- Evidence: `research/abnb/evaluation/final_test/FINAL_TEST_EVALUATION.md`; `research/abnb/evaluation/final_test/final_test_evaluation.json`; `research/abnb/evaluation/final_test/artifact_manifest.json` (`6d9f7207a3f38220bb15df9bd279980e1c7e60f763290bf2b243a8055390b113`); final-test access log in `PROJECT_DATA.md`.
+- Supersedes: none.

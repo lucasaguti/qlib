@@ -1,0 +1,22 @@
+{
+  "artifact_id": "EVAL-FINAL-001",
+  "created_at_utc": "2026-09-26T21:25:53.723292+00:00",
+  "files": {
+    "FINAL_TEST_EVALUATION.md": {
+      "bytes": 3040,
+      "sha256": "58835f9abf57b33513e8ae4c925902351bf8849d536b049250b7d8199a156ccf"
+    },
+    "final_test_evaluation.json": {
+      "bytes": 17576,
+      "sha256": "5b9d00f27652e03acc93624b43cb22f8b4b4faa37a3ea46a45f6c547356353fc"
+    },
+    "final_test_predictions.csv": {
+      "bytes": 9166,
+      "sha256": "3ce3e7936f61c84765248f287b5a81f0927d6ef34cdc0e5e0573d78d6385df3a"
+    },
+    "research/abnb/data/snapshots/final_test_targets.parquet": {
+      "bytes": 21255,
+      "sha256": "40978a1d37eda3b8435e1717b4f6cf5d31b33e26eea27b33db0fe38aff9f4284"
+    }
+  }
+}

@@ -6,8 +6,8 @@
 
 **Repository baseline:** Qlib checkout at `d19677c5`
 
-**Current phase:** evaluation protocol implemented and verified; development-only pseudo-out-of-sample evaluation complete; confirmatory final evaluation blocked
-**Final test status:** frozen as the 12 origins from 2025-06-30 through 2026-05-29; no post-freeze access has occurred
+**Current phase:** single authorized final evaluation completed; result frozen and reported; source-provenance limitations remain unresolved
+**Final test status:** accessed once on 2026-09-26 under user authorization; all 12 frozen origins scored; no rerun or redesign authorized
 
 ## Current state
 
@@ -28,13 +28,13 @@
 - Development-only pseudo-out-of-sample artifact `EVAL-DEV-OOS-001` is reported under `research/abnb/evaluation/development_oos/`. Eight origins from 2024-10-31 through 2025-05-30 meet all training, tuning, feature, and target rules. Ridge RMSE is 0.070715 versus 0.070193 for the matured expanding mean and 0.069458 for zero return; Ridge out-of-sample R-squared versus the expanding mean is -0.014926 and directional accuracy is 0.375 versus a 0.500 class-frequency baseline. The paired Ridge-minus-expanding-mean squared-error estimate is 0.00007354 (three-month circular-block 95% interval -0.00039409 to 0.00054154; HAC(2) p=0.783437). No Holm-adjusted ablation is significant. These are low-precision development diagnostics, not confirmatory evidence.
 - A current-provider corporate-action recheck matches every registered dividend and split row, but does not establish historical adjustment-state versions or availability. Per-observation point-in-time price and adjustment evidence remains blocked.
 - Extraction rights are blocked absent express permission; retention, ML-processing, and backup rights remain unknown. The supplied inputs remain `DEVELOPMENT_ONLY`. The complete review and evidence requirements are in `research/abnb/validation/DATA_LIMITATIONS.md`.
-- No confirmatory trained model or final-test result exists. The development-only evaluation artifact and per-origin forecast file are persisted locally and registered below.
+- The single final-test pass is registered as `EVAL-FINAL-001`. All 12 frozen origins were eligible. The primary finding is `INCONCLUSIVE`: Ridge RMSE was 0.138438 versus 0.140370 for the matured expanding mean and 0.139749 for zero return. Ridge minus expanding-mean squared error was -0.00053867 (three-month circular-block 95% interval -0.00130234 to 0.00007841; HAC(2) p=0.264871). Ridge directional accuracy was 0.4167 versus the 0.5833 class-frequency baseline. No Holm-adjusted ablation was significant. No feature, model, threshold, preprocessing, or protocol redesign was made.
 
 ## Immediate next actions
 
-1. Acquire a licensed replacement source that expressly permits extraction, retention, ML processing, and backup and supplies price/adjustment versions plus availability evidence.
-2. Ingest any 2026-09-22 recovery as a new immutable source version, validate it, and rebuild/register downstream artifacts; retain `MISSING_SOURCE` until then.
-3. After the data blockers are resolved and replacement inputs are validated, rebuild and register the feature/target snapshots, verify the evaluator against them without opening the final block, then conduct the single logged final evaluation authorized by `EVAL-PROTOCOL-001`.
+1. Preserve `EVAL-FINAL-001` unchanged and do not rerun, retune, or redesign from its outcomes.
+2. Acquire a licensed replacement source that expressly permits extraction, retention, ML processing, and backup and supplies price/adjustment versions plus availability evidence; treat any evaluation on replacement data as a separately specified study, not a rerun of this frozen test.
+3. Ingest any 2026-09-22 recovery as a new immutable source version and retain the registered gap history.
 
 ## Blockers and open inputs
 
@@ -44,9 +44,11 @@
 | Point-in-time availability evidence | Blocked | Current action lists match, but historical price and adjustment versions plus both availability timestamps remain absent |
 | Automated extraction right | Blocked | Obtain express provider permission or a licensed delivery mechanism |
 | Retention, ML-processing, and backup rights | Unknown | Obtain and retain written grants and any deletion/archival conditions before confirmatory use |
-| Final test execution | Frozen but not accessed | Implement and verify the protocol on development-only fixtures; resolve data blockers before the single authorized evaluation |
+| Final test execution | Completed once | Preserve `EVAL-FINAL-001`; no rerun or result-driven redesign |
 
 ## Latest verification
+
+Final evaluation on 2026-09-26 with user authorization: the separate authorization-gated runner opened the exact 12 frozen origins once and wrote `EVAL-FINAL-001`. All 12 origins were eligible. The result is `INCONCLUSIVE` under the pre-access classification rule. The runner records Git revision `f885b1c2da4770c7223aaa72a0e662b66e9e0935`, dirty-worktree status, exact execution-code hashes, raw source and manifest hashes, daily/monthly feature hashes, protocol hash, target snapshot, predictions, metrics, uncertainty, and ablations. A post-run readback found and repaired a metadata-only missing return in the source-inventory helper; forecasts and metrics were not recomputed. Before access, all 102 ABNB tests passed; after the metadata repair, the focused final/evaluation tests passed. Provider rights and historical point-in-time adjustment evidence remain unresolved limitations.
 
 Evaluation implementation and development-only run on 2026-09-26 with Python 3.12.10, scikit-learn 1.9.1, statsmodels 0.15.0, NumPy 2.5.3, pandas 2.3.3, and PyArrow 23.0.1: `.venv\Scripts\python.exe -m pytest research/abnb/tests/test_evaluation.py -q` passed all 9 focused tests, and `.venv\Scripts\python.exe -m pytest research/abnb/tests -q` passed all 100 ABNB tests. The evaluation tests cover cutoff-filtered loading, maturity gating, fold-local scaling, chronological inner validation and alpha tie-breaking, future-data invariance, circular block construction, HAC inference, direction handling, fixed temporal summaries, and Holm correction. The development runner scanned only origins through 2025-05-30 and materialized no final-test row. `compileall` completed successfully. Black is not installed in the project environment; `git diff --check` passed after normalizing the changed status line.
 
