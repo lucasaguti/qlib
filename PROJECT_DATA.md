@@ -15,12 +15,29 @@
 
 | ID | Path | Role/instruments | Provider/version | Coverage | Adjustment and availability semantics | SHA-256 | Rights | State |
 |---|---|---|---|---|---|---|---|---|
-| SRC-ABNB-001 | `research/abnb/data/raw/Dataset1/ABNB_daily.csv` | Forecast asset: ABNB | Yahoo Finance via yfinance; package version unknown | 2020-12-10 to 2026-09-23; 1,451 rows | `auto_adjust=false`; Close, Adj Close, dividends, and splits retained; PIT assertion unconfirmed | `76a120fb7de4489af1d81735ebe9797f3a335abfd6392a1aca9c24f1fbe3603f` | Unknown | Development only; missing XNYS 2026-09-22 |
-| SRC-BKNG-001 | `research/abnb/data/raw/Dataset2/BKNG_daily.csv` | Peer: BKNG | Yahoo Finance via yfinance; package version unknown | 2019-01-02 to 2026-09-23; 1,942 rows | Same; 11 dividends and one 25:1 split recorded | `b2ca085eb6104e2338cb99733eb5c8c19953f6259a336d7f21b6810ceac3cf7b` | Unknown | Development only; structural validation passed |
-| SRC-EXPE-001 | `research/abnb/data/raw/Dataset2/EXPE_daily.csv` | Peer: EXPE | Yahoo Finance via yfinance; package version unknown | 2019-01-02 to 2026-09-23; 1,941 rows | Same; 12 dividends and no splits recorded | `a74c26ee209d4aaad1708751942cb99ee83098a5a487a54a73ee76aed9402a68` | Unknown | Development only; missing XNYS 2026-09-22 |
-| SRC-SPY-001 | `research/abnb/data/raw/Dataset2/SPY_daily.csv` | Broad market: SPY | Yahoo Finance via yfinance; package version unknown | 2019-01-02 to 2026-09-23; 1,942 rows | Same; 31 dividends and no splits recorded | `9e37898aeea8730570cde4ca5403ddfd7384508c37bf63ff7ace2bb9e8d93069` | Unknown | Development only; structural validation passed |
+| SRC-ABNB-001 | `research/abnb/data/raw/Dataset1/ABNB_daily.csv` | Forecast asset: ABNB | Yahoo Finance via yfinance; package version unknown | 2020-12-10 to 2026-09-23; 1,451 rows | `auto_adjust=false`; Close, Adj Close, dividends, and splits retained; PIT assertion unconfirmed | `76a120fb7de4489af1d81735ebe9797f3a335abfd6392a1aca9c24f1fbe3603f` | See rights matrix below | Development only; 2026-09-22 remains `MISSING_SOURCE`; later provider view documented in LIM-001 |
+| SRC-BKNG-001 | `research/abnb/data/raw/Dataset2/BKNG_daily.csv` | Peer: BKNG | Yahoo Finance via yfinance; package version unknown | 2019-01-02 to 2026-09-23; 1,942 rows | Same; 11 dividends and one 25:1 split recorded | `b2ca085eb6104e2338cb99733eb5c8c19953f6259a336d7f21b6810ceac3cf7b` | See rights matrix below | Development only; structural validation passed |
+| SRC-EXPE-001 | `research/abnb/data/raw/Dataset2/EXPE_daily.csv` | Peer: EXPE | Yahoo Finance via yfinance; package version unknown | 2019-01-02 to 2026-09-23; 1,941 rows | Same; 12 dividends and no splits recorded | `a74c26ee209d4aaad1708751942cb99ee83098a5a487a54a73ee76aed9402a68` | See rights matrix below | Development only; 2026-09-22 remains `MISSING_SOURCE`; later provider view documented in LIM-001 |
+| SRC-SPY-001 | `research/abnb/data/raw/Dataset2/SPY_daily.csv` | Broad market: SPY | Yahoo Finance via yfinance; package version unknown | 2019-01-02 to 2026-09-23; 1,942 rows | Same; 31 dividends and no splits recorded | `9e37898aeea8730570cde4ca5403ddfd7384508c37bf63ff7ace2bb9e8d93069` | See rights matrix below | Development only; structural validation passed |
 
 Each registered current CSV has a byte-identical immutable copy under its dataset's `versions/` directory.
+
+### Usage-rights assessment
+
+No project-specific provider contract, subscription entitlement, or express
+permission was supplied. Public Yahoo/yfinance materials do not establish the
+rights required by the research charter. The operative status is therefore:
+
+| Right | Status | Confirmatory requirement |
+|---|---|---|
+| Automated extraction | `BLOCKED` | Express permission or licensed delivery covering the extraction method |
+| Retention | `UNKNOWN` | Written permission for immutable source and derived-data retention |
+| ML processing | `UNKNOWN` | Written permission for feature engineering, model fitting, evaluation, and derived artifacts |
+| Backup | `UNKNOWN` | Written permission for archival/redundant copies and documented deletion duties |
+
+See LIM-001 for the reviewed terms and evidence standard. Accessibility,
+academic intent, and the `yfinance` software license are not treated as data
+rights.
 
 ### Registered manifests
 
@@ -35,7 +52,10 @@ Each registered current CSV has a byte-identical immutable copy under its datase
 |---|---|---|---|---|---|---|
 | CAL-XNYS-001 | Python environment dependency | XNYS via `exchange-calendars==4.13.2` | All registered source ranges | Library-generated schedule; source manifests do not identify their calendar | N/A | Validation calendar accepted; source-calendar provenance pending |
 
-Corporate actions are embedded in the registered CSVs. Their effective dates and values were structurally validated, but historical versions and availability evidence remain unverified.
+Corporate actions are embedded in the registered CSVs. Their effective dates
+and values were structurally validated. A current-provider recheck on
+2026-09-26 UTC matched all registered explicit action rows, as documented in
+LIM-001, but historical versions and availability evidence remain unverified.
 
 ## Indicator specifications and PDFs
 
@@ -50,7 +70,8 @@ Any PDF interpretation that changes or clarifies a formula, seed, null behavior,
 | ID | Path | Parents | Build config | Code revision | Coverage/split | SHA-256 | State |
 |---|---|---|---|---|---|---|---|
 | VAL-001 | `research/abnb/validation/data_validation.json` | SRC-ABNB-001, SRC-BKNG-001, SRC-EXPE-001, SRC-SPY-001 | `pipeline/validate_inputs.py`; `exchange-calendars==4.13.2` | Working tree at Qlib `be725493` | Full registered source coverage; no modeling split | `b1435e3c31161c7ee67a032956dfe757de6ed03285c06b01b13e416ac28168b8` | Completed; development-only readiness |
-| VAL-002 | `research/abnb/validation/DATA_VALIDATION.md` | VAL-001 | Human-readable validation summary | Working tree at Qlib `be725493` | Full registered source coverage; no modeling split | `9dd3bd1d2317491d06078f9d36bb5548b74e0b49b2115dce7ba02420eed5f896` | Completed |
+| VAL-002 | `research/abnb/validation/DATA_VALIDATION.md` | VAL-001; LIM-001 follow-up link | Human-readable validation summary | Working tree at Qlib `d19677c` | Full registered source coverage; no modeling split | `9ff7a0e5e6b25710aba87ca2937c2c62a3a498f3f52249f5a4781590147814af` | Completed |
+| LIM-001 | `research/abnb/validation/DATA_LIMITATIONS.md` | SRC-ABNB-001, SRC-BKNG-001, SRC-EXPE-001, SRC-SPY-001; CAL-XNYS-001; current online corroboration | Manual source-gap, PIT/corporate-action, and rights review; no online response retained as research data | Git `d19677c59a8d229f53681af26654e28cde74fe64`; documentation working tree | Full registered source coverage; no modeling split or final-test access | `d7ba2ceb2ef8f94d68ac63bdd421bab82f78d02259be4fb4f4f47df96066f0e4` | Completed review; gaps and confirmatory blockers explicitly retained |
 | FEAT-001 | `research/abnb/data/interim/daily_features.parquet` | SRC-ABNB-001, SRC-BKNG-001, SRC-EXPE-001, SRC-SPY-001; Dataset1/2 manifests; CAL-XNYS-001 | `pipeline/daily_features.py` schema v1; `exchange-calendars==4.13.2`; `pyarrow==23.0.1` | Git `0ffc0b841ef6f88ed4f9d779d36f8df56c857378`; dirty worktree recorded in artifact | 2020-12-10 through 2026-09-23; 1,452 daily sessions; no modeling split | `ba147b9470e5c267e2e0ff2fac8850f5e0554009adfc1715b5042fc105f449b6` | Completed; development-only; untracked |
 | MONTH-001 | `research/abnb/data/interim/monthly_features.parquet` | FEAT-001 (`ba147b9470e5c267e2e0ff2fac8850f5e0554009adfc1715b5042fc105f449b6`); CAL-XNYS-001 | `pipeline/monthly_features.py` schema v2; final XNYS reference session for each completed calendar month; exact close/cutoff, next-session-open issuance, final-session maturity three calendar months later, and maturity-close label availability; `exchange-calendars==4.13.2`; `pyarrow==23.0.1` | Git `672f54198e1ff4d926dfe3b0ebdfbbe288d9e3ad`; dirty worktree recorded in artifact | 2020-12 through 2026-08; 69 monthly origins; partial 2026-09 excluded; scheduled maturities through 2026-11; no modeling split | `7c774c32f4fd9a0582968bbef7a16cdacf796c583a301613df4e2b2aff4c7581` | Completed; development-only; untracked |
 

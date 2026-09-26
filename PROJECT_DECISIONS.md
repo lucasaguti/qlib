@@ -117,3 +117,14 @@
 - Consequences: Labels may only be admitted at or after `label_available_at`; unavailable or incomplete maturity prices must remain explicitly unavailable. The monthly artifact schema advances to version 2. The duplicated source `session_date` remains for daily-row lineage while `reference_session` gives it its forecast-contract meaning.
 - Evidence: `research/abnb/pipeline/monthly_features.py`; `research/abnb/tests/test_monthly_features.py`; `research/abnb/tests/test_daily_features.py`; MONTH-001 in `PROJECT_DATA.md` (73 total ABNB tests passed on 2026-09-25).
 - Supersedes: none.
+
+### D010 — Retain the source gaps and confirmatory data blockers
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: data
+- Decision: Keep ABNB and EXPE on 2026-09-22 as `MISSING_SOURCE` in the registered source versions. Treat later Yahoo observations as diagnostic corroboration only, not as replacements. Continue to classify all four Yahoo/yfinance inputs as `DEVELOPMENT_ONLY` because point-in-time price/adjustment evidence and the required extraction, retention, ML-processing, and backup rights are not established.
+- Rationale: The date was an XNYS session and later provider views contain both observations, showing an omission in the registered extraction. Those later views cannot reconstruct the source state at the 2026-09-24 extraction or at historical forecast cutoffs. Current corporate-action agreement does not provide historical version evidence, and public terms do not grant all rights required by the charter.
+- Consequences: Do not patch `SRC-ABNB-001` or `SRC-EXPE-001`, fill the session, or promote downstream artifacts to confirmatory use. A licensed replacement must be ingested as a new immutable version with availability, adjustment-state, rights, retrieval, and checksum evidence, followed by complete rebuild and registration.
+- Evidence: `research/abnb/validation/DATA_LIMITATIONS.md` (LIM-001); `PROJECT_DATA.md`; XNYS via `exchange-calendars==4.13.2`; diagnostic checks completed 2026-09-26 UTC.
+- Supersedes: none.

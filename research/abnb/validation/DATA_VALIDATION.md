@@ -56,3 +56,11 @@ The manifests also do not document extraction, retention, machine-learning, back
 | Overall use | DEVELOPMENT_ONLY |
 
 Feature construction may proceed only as explicitly labeled development work. Confirmatory evaluation remains blocked until provenance and rights are resolved or the project charter is explicitly amended.
+
+## Follow-up limitation review
+
+The 2026-09-22 gap, current corporate-action state, point-in-time evidence,
+and extraction/retention/ML-processing/backup rights were investigated further
+on 2026-09-25 America/New_York. The registered source versions were not
+changed, and all confirmatory blockers remain in force. See
+`DATA_LIMITATIONS.md` and decision D010.

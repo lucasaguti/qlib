@@ -3,7 +3,7 @@
 > **Dynamic document.** Update this file after every material implementation, validation, experiment, or change in blockers. Keep it factual and current; do not rewrite the charter in `PROJECT_INNATE.md`.
 
 **Last updated:** 2026-09-25  
-**Repository baseline:** Qlib checkout at `672f5419`
+**Repository baseline:** Qlib checkout at `d19677c5`
 
 **Current phase:** development-only feature artifacts and temporal forecast contract complete; target values not constructed
 **Final test status:** not selected; no access has occurred
@@ -14,18 +14,19 @@
 - The project charter and agent operating instructions are established at repository root.
 - ABNB, BKNG, EXPE, and SPY current/archived CSVs, both source manifests, and the initial indicator PDF are registered under `research/abnb/data/raw/` and excluded from Git.
 - Reproducible validation is implemented in `research/abnb/pipeline/validate_inputs.py`; results are in `research/abnb/validation/`.
-- Byte, archive, schema, date, and value integrity passed. ABNB and EXPE are missing the XNYS session 2026-09-22.
+- Byte, archive, schema, date, and value integrity passed. The 2026-09-22 gap was investigated: it was a regular XNYS session and later Yahoo views contain ABNB and EXPE observations, so the registered extraction omitted real source rows. Because the later view is not the registered point-in-time version, both statuses remain `MISSING_SOURCE`.
 - The in-memory canonical daily panel is implemented in `research/abnb/pipeline/panel.py`. It verifies registered hashes, uses the full 1,452-session XNYS study calendar, retains source lineage metadata, masks unusable modeling prices, and preserves the two 2026-09-22 source gaps as `MISSING_SOURCE`.
 - The eight locked daily feature functions are implemented in `research/abnb/pipeline/features.py`. Each returns a nullable value plus status, enforces its exact consecutive-session history, and resets/reseeds RSI, EMA, and MACD after unusable observations. SPY and peer functions can enforce an explicit anchor date for cross-security calls.
 - Daily feature orchestration is implemented in `research/abnb/pipeline/daily_features.py`. It evaluates all eight features at every canonical session and writes the untracked development artifact `research/abnb/data/interim/daily_features.parquet` with feature-level statuses and repeated calendar, source, parent-hash, build-time, and Git provenance.
 - Monthly sampling is implemented in `research/abnb/pipeline/monthly_features.py` as strict row selection from the daily artifact. It selects the actual final XNYS session only for completed calendar months, copies all feature values and statuses without recalculation, and writes the untracked `research/abnb/data/interim/monthly_features.parquet` artifact. Each origin now carries its reference session, actual UTC close/information cutoff, issuance at the next XNYS session open, final-session maturity in the calendar month exactly three months later, and label-availability close.
-- The supplied inputs are classified `DEVELOPMENT_ONLY`: point-in-time evidence is insufficient and usage rights are unknown.
+- A current-provider corporate-action recheck matches every registered dividend and split row, but does not establish historical adjustment-state versions or availability. Per-observation point-in-time price and adjustment evidence remains blocked.
+- Extraction rights are blocked absent express permission; retention, ML-processing, and backup rights remain unknown. The supplied inputs remain `DEVELOPMENT_ONLY`. The complete review and evidence requirements are in `research/abnb/validation/DATA_LIMITATIONS.md`.
 - No persisted processed dataset, frozen split, trained model, or model result exists.
 
 ## Immediate next actions
 
-1. Investigate or replace the missing ABNB and EXPE observations for 2026-09-22 without filling them silently.
-2. Obtain supporting point-in-time availability/corporate-action evidence and document data usage rights.
+1. Acquire a licensed replacement source that expressly permits extraction, retention, ML processing, and backup and supplies price/adjustment versions plus availability evidence.
+2. Ingest any 2026-09-22 recovery as a new immutable source version, validate it, and rebuild/register downstream artifacts; retain `MISSING_SOURCE` until then.
 3. Construct status-bearing three-calendar-month adjusted-return labels without admitting values before `label_available_at`.
 4. Freeze the final-test period before any confirmatory evaluation.
 
@@ -33,12 +34,15 @@
 
 | Item | State | Needed resolution |
 |---|---|---|
-| XNYS 2026-09-22 observations | Missing | Investigate ABNB and EXPE source absence; preserve `MISSING_SOURCE` meanwhile |
-| Point-in-time availability evidence | Blocked | Provide retained price-version and adjustment-state evidence or amend the intended claim |
-| Data usage/retention/ML rights | Unknown | Record source terms or user-supplied authorization before confirmatory use |
+| XNYS 2026-09-22 observations | Investigated; retained missing | Later provider views contain both rows, but they are not the registered vintage; preserve `MISSING_SOURCE` until a licensed, versioned replacement is ingested |
+| Point-in-time availability evidence | Blocked | Current action lists match, but historical price and adjustment versions plus both availability timestamps remain absent |
+| Automated extraction right | Blocked | Obtain express provider permission or a licensed delivery mechanism |
+| Retention, ML-processing, and backup rights | Unknown | Obtain and retain written grants and any deletion/archival conditions before confirmatory use |
 | Final test period | Unset | Freeze before confirmatory evaluation |
 
 ## Latest verification
+
+Data-limitation review on 2026-09-25 America/New_York (online checks completed 2026-09-26 UTC): confirmed 2026-09-22 was an XNYS session; corroborated later ABNB and EXPE observations without modifying or supplementing the registered raw inputs; and matched the current provider's explicit corporate-action lists to all four registered CSVs. Rights review did not establish the required extraction, retention, ML-processing, or backup grants. See `research/abnb/validation/DATA_LIMITATIONS.md` and D010. `.venv\Scripts\python.exe -m pytest research/abnb/tests/test_panel.py -q` passed all 7 tests (4 dependency deprecation warnings); all four registered raw hashes and the two validation-document hashes matched `PROJECT_DATA.md`; `git diff --check` passed. No final-test period exists and no final-test access occurred.
 
 Initial validation completed with Python 3.12.10 and XNYS from `exchange-calendars==4.13.2`. All current/archived hashes match; structural and numeric checks passed. Full findings are in `research/abnb/validation/DATA_VALIDATION.md` and `data_validation.json`.
 
