@@ -150,3 +150,14 @@
 - Consequences: `TARGET-001` is development-only and cannot support confirmatory claims while source rights and point-in-time adjustment evidence remain blocked. The future evaluation runner must unlock final-test prices only in its logged, single authorized pass and must fit every learned transform inside each training fold.
 - Evidence: `research/abnb/pipeline/targets.py`; `research/abnb/tests/test_targets.py`; TARGET-001 in `PROJECT_DATA.md` (84 total ABNB tests passed on 2026-09-25).
 - Supersedes: none.
+
+### D013 — Treat feature diagnostics as development-only implementation checks
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: feature | validation
+- Decision: Run the initial feature diagnostics only on origins through the frozen development cutoff of 2025-05-30. Partition the 54 development origins into three fixed contiguous 18-origin blocks before inspecting values. Preserve feature statuses; calculate distributions and Tukey 1.5-IQR flags on `VALID` values; use pairwise-valid Pearson/Spearman correlations and complete-case VIF/condition diagnostics; compare fixed-subperiod location, dispersion, and empirical distributions; assess corporate-action exposure over each feature's exact session window with raw-close formula proxies; and report both the mechanical `N/3` non-overlap equivalent and lag-2 empirical dependence sensitivities. Do not use these checks to alter the locked predictors or claim predictiveness.
+- Rationale: The diagnostics must expose implementation defects, extreme observations, redundancy, structural change, action-adjustment sensitivity, and dependence without leaking the frozen final test or becoming an unplanned feature-selection exercise. The fixed subperiods and diagnostic definitions prevent result-driven window selection.
+- Consequences: The complete-feature development sample is 42 origins. RSI and EMA gap show substantial redundancy (Pearson 0.901; VIFs 7.70 and 8.46), momentum and realized-volatility dispersion vary across subperiods, and three-month overlap reduces the design-based effective count to 18 for all valid targets and 14 for complete-feature targets. These findings are retained as limitations/monitoring signals; they do not modify `EVAL-PROTOCOL-001`, the eight-feature Ridge specification, eligibility, preprocessing, or the isolated final test.
+- Evidence: `research/abnb/pipeline/feature_diagnostics.py`; `research/abnb/tests/test_feature_diagnostics.py`; `research/abnb/diagnostics/development_features/DEVELOPMENT_FEATURE_DIAGNOSTICS.md`; DIAG-DEV-FEATURES-001 in `PROJECT_DATA.md` (7 focused tests passed and five figures visually reviewed on 2026-09-25).
+- Supersedes: none.

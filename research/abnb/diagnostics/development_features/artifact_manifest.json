@@ -1,0 +1,34 @@
+{
+  "artifact_id": "DIAG-DEV-FEATURES-001",
+  "created_at_utc": "2026-09-26T02:44:51.968951+00:00",
+  "files": {
+    "DEVELOPMENT_FEATURE_DIAGNOSTICS.md": {
+      "bytes": 5849,
+      "sha256": "adbb89b9bf7d21ea7377394463b904014361bd3bf5da10e6fad9fe0f0608b28f"
+    },
+    "development_feature_diagnostics.json": {
+      "bytes": 55310,
+      "sha256": "1b9edd44a77420cd45c4b1f18ff3caaa916ea0ee4bd533bb7fc37b991b8cfd93"
+    },
+    "figures/corporate_action_sensitivity.png": {
+      "bytes": 61045,
+      "sha256": "02ea06ad51be0576f15b99fd3823322f66eb90d1881a04edc39511ca74d0a0fe"
+    },
+    "figures/correlations.png": {
+      "bytes": 175705,
+      "sha256": "75d2ce1ba7d1660583a54499e0eda172d054efd50327019ffe9660e16d2f38ba"
+    },
+    "figures/distributions.png": {
+      "bytes": 85992,
+      "sha256": "e88a7d9a26adabc21a0e3c15adea2cb3a7c2017a6587a482d64428fc13894943"
+    },
+    "figures/subperiod_stability.png": {
+      "bytes": 82008,
+      "sha256": "f670d8d94cb0c013c1561f0fd0d57172c260b782a02fe7902f1b924243e2ba95"
+    },
+    "figures/temporal_stability.png": {
+      "bytes": 385543,
+      "sha256": "2e1b3580f10c880a19f43ff99098b64a13b5bb1d66c7784d02d41bee2657c2a2"
+    }
+  }
+}
