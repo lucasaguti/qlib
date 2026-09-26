@@ -99,3 +99,33 @@ def test_rejects_panel_with_missing_security_row():
 
     with pytest.raises(ValueError, match="exactly one ordered row"):
         build_daily_feature_table(panel=panel)
+
+
+def test_future_price_mutation_cannot_change_reference_session_features():
+    from research.abnb.pipeline.panel import build_daily_panel
+
+    reference_session = pd.Timestamp("2024-01-31")
+    panel = build_daily_panel(
+        RAW_ROOT, start="2022-12-01", end="2024-02-29"
+    )
+    baseline = build_daily_feature_table(panel=panel)
+
+    mutated = panel.copy(deep=True)
+    future = mutated.index.get_level_values("session_date") > reference_session
+    mutated.loc[future, "adjusted_close"] *= 1000.0
+    mutated.loc[future, "source_adjusted_close"] *= 1000.0
+    mutated.attrs = panel.attrs
+    rebuilt = build_daily_feature_table(panel=mutated)
+
+    columns = list(FEATURE_COLUMNS) + list(STATUS_COLUMNS)
+    expected = baseline.set_index("session_date").loc[reference_session, columns]
+    actual = rebuilt.set_index("session_date").loc[reference_session, columns]
+    pd.testing.assert_series_equal(actual, expected)
+    rebuilt_by_session = rebuilt.set_index("session_date")
+    baseline_by_session = baseline.set_index("session_date")
+    assert (
+        rebuilt_by_session.loc[pd.Timestamp("2024-02-29"), "ABNB_RET_21D"]
+        != baseline_by_session.loc[
+            pd.Timestamp("2024-02-29"), "ABNB_RET_21D"
+        ]
+    )

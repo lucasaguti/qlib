@@ -106,3 +106,14 @@
 - Consequences: The current development artifact contains 69 origins from December 2020 through August 2026 and excludes partial September 2026. Monthly rebuilds depend on and record the exact daily artifact hash. Target maturity, issuance timing, and eligibility are separate downstream contracts.
 - Evidence: `research/abnb/pipeline/monthly_features.py`; `research/abnb/tests/test_monthly_features.py`; MONTH-001 in `PROJECT_DATA.md` (67 total ABNB tests passed on 2026-09-25).
 - Supersedes: none.
+
+### D009 — Derive forecast timing from exact XNYS sessions
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: target
+- Decision: For every completed monthly origin, set `reference_session` to the final XNYS session of the reference month, `reference_close_utc` and `information_cutoff_utc` to that session's official close, and `issued_at_utc` to the following XNYS session's official open. Set `maturity_session` to the final XNYS session in the calendar month exactly three months after the reference month and `label_available_at` to its official close. Derive future maturity timing from the pinned calendar even when source-price coverage has not completed the maturity month; this schedules availability but does not assert that a label value exists.
+- Rationale: Direct calendar lookup preserves weekends, holidays, daylight-saving changes, early closes, and year boundaries while enforcing the charter's calendar-month horizon. It prevents a fixed 63-session offset from changing the target date.
+- Consequences: Labels may only be admitted at or after `label_available_at`; unavailable or incomplete maturity prices must remain explicitly unavailable. The monthly artifact schema advances to version 2. The duplicated source `session_date` remains for daily-row lineage while `reference_session` gives it its forecast-contract meaning.
+- Evidence: `research/abnb/pipeline/monthly_features.py`; `research/abnb/tests/test_monthly_features.py`; `research/abnb/tests/test_daily_features.py`; MONTH-001 in `PROJECT_DATA.md` (73 total ABNB tests passed on 2026-09-25).
+- Supersedes: none.

@@ -28,6 +28,10 @@ DEFAULT_OUTPUT_PATH = (
     / "monthly_features.parquet"
 )
 SAMPLING_RULE = "final XNYS session of each completed calendar month"
+TEMPORAL_CONTRACT = (
+    "reference close cutoff; next XNYS session open issuance; "
+    "final XNYS session three calendar months later maturity"
+)
 
 
 def _single_value(table: pd.DataFrame, column: str) -> Any:
@@ -76,6 +80,40 @@ def _validated_sessions(table: pd.DataFrame) -> tuple[pd.DatetimeIndex, Any]:
     return sessions, calendar
 
 
+def _temporal_contract(
+    reference_sessions: pd.DatetimeIndex, calendar: Any
+) -> pd.DataFrame:
+    """Return exact XNYS timing fields for monthly forecast origins."""
+
+    records: list[dict[str, pd.Timestamp]] = []
+    for reference_session in reference_sessions:
+        reference_close = calendar.session_close(reference_session).tz_convert("UTC")
+        next_session = calendar.next_session(reference_session)
+        issued_at = calendar.session_open(next_session).tz_convert("UTC")
+
+        maturity_month = reference_session.to_period("M") + 3
+        maturity_sessions = calendar.sessions_in_range(
+            maturity_month.start_time, maturity_month.end_time.normalize()
+        )
+        if len(maturity_sessions) == 0:
+            raise ValueError(
+                f"XNYS calendar has no sessions in maturity month {maturity_month}"
+            )
+        maturity_session = pd.Timestamp(maturity_sessions[-1]).tz_localize(None)
+        label_available_at = calendar.session_close(maturity_session).tz_convert("UTC")
+        records.append(
+            {
+                "reference_session": reference_session,
+                "reference_close_utc": reference_close,
+                "information_cutoff_utc": reference_close,
+                "issued_at_utc": issued_at,
+                "maturity_session": maturity_session,
+                "label_available_at": label_available_at,
+            }
+        )
+    return pd.DataFrame.from_records(records)
+
+
 def sample_monthly_features(daily_features: pd.DataFrame) -> pd.DataFrame:
     """Select existing daily rows at completed XNYS month-ends.
 
@@ -101,10 +139,16 @@ def sample_monthly_features(daily_features: pd.DataFrame) -> pd.DataFrame:
         "calendar_month",
         pd.DatetimeIndex(monthly["session_date"]).strftime("%Y-%m"),
     )
+    timing = _temporal_contract(
+        pd.DatetimeIndex(monthly["session_date"]), calendar
+    )
+    for position, column in enumerate(timing.columns, start=2):
+        monthly.insert(position, column, timing[column])
     monthly.attrs = {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_role": "development-only interim monthly feature table",
         "sampling_rule": SAMPLING_RULE,
+        "temporal_contract": TEMPORAL_CONTRACT,
         "feature_columns": list(FEATURE_COLUMNS),
         "status_columns": list(STATUS_COLUMNS),
     }
@@ -130,6 +174,7 @@ def build_monthly_feature_table(
         "monthly_code_revision": revision,
         "monthly_code_dirty": dirty,
         "monthly_sampling_rule": SAMPLING_RULE,
+        "monthly_temporal_contract": TEMPORAL_CONTRACT,
     }
     for column, value in provenance.items():
         monthly[column] = value
