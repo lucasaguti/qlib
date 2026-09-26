@@ -139,3 +139,14 @@
 - Consequences: Final-test outcomes cannot influence features, preprocessing, tuning, eligibility, uncertainty, or multiplicity. Every attempted or successful access to a final-test row or outcome-derived artifact after the freeze must be logged in `PROJECT_DATA.md`. Protocol corrections require a new preserved version and cannot be motivated by final-test results. Confirmatory evaluation remains blocked by source rights and point-in-time evidence and cannot run until target construction and implementation verification are complete.
 - Evidence: `research/abnb/EVALUATION_PROTOCOL.md`; `research/abnb/config/evaluation_protocol.json` (`dd74ed2a387cfa9caab496fcfe12cdcda58b8a1bcdf689b009e20da0ec2b154c`); CAL-XNYS-001.
 - Supersedes: none.
+
+### D012 — Materialize targets without opening the frozen final test
+
+- Date: 2026-09-25
+- Status: accepted
+- Scope: target | evaluation
+- Decision: Construct `ABNB_RETURN_3M` as `maturity_adjusted_close / reference_adjusted_close - 1` from the exact ABNB adjusted closes on the calendar-derived reference and maturity sessions. Retain one target row per scheduled origin with explicit source, `IMMATURE`, and `WITHHELD_BY_PROTOCOL` states. For the development artifact, read prices only through 2025-08-29, the last development-label maturity; leave all 12 frozen final-test prices and returns null, and retain the three post-test origins as `IMMATURE`. Admit a training label only when it is finite, `VALID`, and `label_available_at <=` the current origin's `issued_at_utc`; do not perform preprocessing in target construction or selection.
+- Rationale: Exact adjusted prices implement the split- and cash-dividend-adjusted total-return contract. A target-only artifact can complete and test the development pipeline without reading outcomes that the frozen protocol reserves for the single authorized final evaluation. Explicit statuses prevent missing, invalid, immature, or protocol-withheld values from being silently coerced.
+- Consequences: `TARGET-001` is development-only and cannot support confirmatory claims while source rights and point-in-time adjustment evidence remain blocked. The future evaluation runner must unlock final-test prices only in its logged, single authorized pass and must fit every learned transform inside each training fold.
+- Evidence: `research/abnb/pipeline/targets.py`; `research/abnb/tests/test_targets.py`; TARGET-001 in `PROJECT_DATA.md` (84 total ABNB tests passed on 2026-09-25).
+- Supersedes: none.
